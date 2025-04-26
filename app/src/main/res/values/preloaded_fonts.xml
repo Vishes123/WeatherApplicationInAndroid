@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/alexandria_medium</item>
+        <item>@font/carter_one</item>
+        <item>@font/cherry_cream_soda</item>
+        <item>@font/comfortaa_light</item>
+        <item>@font/gloock</item>
+        <item>@font/poller_one</item>
+    </array>
+</resources>
