@@ -197,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                internetError();
                 Toast.makeText(MainActivity.this, "Failed to load weather data", Toast.LENGTH_SHORT).show();
             }
         });
@@ -239,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
             switch (weatherCondition.toLowerCase()) {
                 case "clear":
                     weatherAnimation.setAnimation(R.raw.sun);
-                    backgroundResId = R.drawable.sunny_background;
+                    backgroundResId = R.drawable.sunnysky;
                     notificationHelper.sendNotification(city+ " Weather Alert 🌧️", weatherCondition);
                     break;
                 case "rain":
@@ -398,6 +399,11 @@ public class MainActivity extends AppCompatActivity {
         dateTxt.setTextColor(textColor);
         dayTxt.setTextColor(textColor);
         today.setTextColor(textColor);
+    }
+
+    void internetError(){
+        Intent intent = new Intent(MainActivity.this , InternetError.class);
+        startActivity(intent);
     }
 
 }

@@ -8,7 +8,7 @@
     card_view:cardElevation="4dp">
 
     <LinearLayout
-        android:background="@drawable/plainsky"
+        android:background="@drawable/solash2"
         android:orientation="vertical"
         android:padding="12dp"
         android:layout_width="match_parent"
