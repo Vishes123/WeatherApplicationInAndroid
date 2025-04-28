@@ -34,24 +34,37 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.WorkerParameters;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
+    RecyclerView recyclerView;
+    FastAdapter<ListAdeptar> fastAdapter;
+    ItemAdapter<ListAdeptar> itemAdapter;
+    WeatherDatabse weatherDatabse;
+
     Context context;
     private EditText searchtext;
     private TextView locationTxt, temperatureTxt, maxTempTxt, minTempTxt, weatherConditionTxt, windTxt, humidityTxt, sunriseTxt, sunsetTxt, dateTxt, dayTxt , textColor , today;
@@ -75,6 +88,57 @@ public class MainActivity extends AppCompatActivity {
         context = this;
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        // Recycle View or List Ke Actton Event ke liya-----------------------------------------------
+
+        recyclerView = findViewById(R.id.scrollableList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        itemAdapter = new ItemAdapter<>();
+        fastAdapter = FastAdapter.with(itemAdapter);
+        recyclerView.setAdapter(fastAdapter);
+        weatherDatabse = WeatherDatabse.getInstance(this);
+        fastAdapter.withOnClickListener((v, adapter, item, position) -> {
+            String cityName = item.entity.getCity();
+            fetchWeatherFromApi(cityName);
+            Toast.makeText(MainActivity.this, "Clicked: " + item.entity.getCity(), Toast.LENGTH_SHORT).show();
+            return true;
+        });
+
+        ItemTouchHelper.SimpleCallback swipeCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                ListAdeptar swipedItem = itemAdapter.getAdapterItem(position);
+                Entity entityToDelete = swipedItem.entity;
+
+
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                executor.execute(() -> {
+                    WeatherDatabse db = WeatherDatabse.getInstance(getApplicationContext());
+                    if (direction == ItemTouchHelper.LEFT) {
+
+                        db.dao().deleteById(entityToDelete.getId());
+                        runOnUiThread(() -> {
+                            itemAdapter.remove(position);
+                            Toast.makeText(MainActivity.this, "Weather Data Deleted", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
+            }
+        };
+
+        new ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView);
+//=======================================================================================================================
+
+
+
+
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         notificationHelper = new NotificationHelper(MainActivity.this);
 
@@ -120,7 +184,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
          // Ye defulte Location ke Liye
+          loadWeatherDataFromRoom2();
           fetchWeatherFromApi("Noida");
+          getCityNamefromRecycle();
+          getCityNamefromRecycle2();
+
+
 
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -141,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    private void fetchWeatherFromApi(String city) {
+       void fetchWeatherFromApi(String city) {
         WeatherService api = RetrofitClint.getClint();
         Call<WeatherResponse> call = api.getWeatherByCity(city, "metric", "d863f6598caaa041f5c8406dc4d5b176");
 
@@ -405,5 +474,60 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this , InternetError.class);
         startActivity(intent);
     }
+
+    void getCityNamefromRecycle() {
+        Intent intent = getIntent();
+        String city = intent.getStringExtra("city_name");
+
+        if (city != null && !city.isEmpty()) {
+            fetchWeatherFromApi(city);
+        }
+    }
+
+    void getCityNamefromRecycle2() {
+        Intent intent = getIntent();
+        String cityName = intent.getStringExtra("city_name2");
+
+        if (cityName != null && !cityName.isEmpty()) {
+            fetchWeatherFromApi(cityName);
+
+        }
+    }
+
+
+
+    private void loadWeatherDataFromRoom2() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            WeatherDatabse db = WeatherDatabse.getInstance(getApplicationContext());
+
+            // Test kr rha hu
+            if (db.dao().getAllWeather().isEmpty()) {
+                Entity e = new Entity();
+                e.setCity("Test City");
+                e.setCondition("Sunny");
+                e.setTempreture(30.0);
+                e.setLastUpdateTime(System.currentTimeMillis());
+                db.dao().insert(e);
+            }
+
+            List<Entity> allData = db.dao().getAllWeather();
+            //List<Entity> reversedList = new ArrayList<>(allData);
+            List<Entity> latestFive = allData.subList(0, Math.min(5, allData.size()));
+
+            List<ListAdeptar> itemList = new ArrayList<>();
+            for (Entity e : latestFive) {
+                itemList.add(new ListAdeptar(e));
+            }
+
+            runOnUiThread(() -> {
+                itemAdapter.set(itemList);
+            });
+        });
+    }
+
+
+
+
 
 }

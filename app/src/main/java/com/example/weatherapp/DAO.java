@@ -14,6 +14,9 @@ public interface DAO {
     @Query("SELECT * FROM weather_table ORDER BY lastUpdateTime DESC")
     List<Entity> getAllWeather();
 
+    @Query("DELETE FROM weather_table WHERE id = :id")
+    void deleteById(int id);
+
     @Query("SELECT * FROM weather_table")
     List<Entity> getAllWeatherData();
 }

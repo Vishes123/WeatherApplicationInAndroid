@@ -2,14 +2,44 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@color/black"
     android:id="@+id/main2"
     android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
 
-        android:id="@+id/recycleID"
-        android:background="@drawable/plainsky"
+    <TextView
+        android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:text="Weather Search"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:padding="16dp"/>
+
+
+    <EditText
+        android:id="@+id/searchID2"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/search_view"
+        android:contextClickable="true"
+        android:drawableStart="@drawable/search"
+        android:drawablePadding="10dp"
+        android:hint="Search For A City"
+        android:inputType="text"
+        android:paddingStart="40dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        android:textDirection="firstStrong"
+        />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycleID"
+        android:background="@color/black"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </LinearLayout>

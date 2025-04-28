@@ -51,6 +51,11 @@ dependencies {
 
     implementation ("androidx.work:work-runtime:2.9.0")
 
+    //Swipe
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
+
+
+
 
     implementation(libs.appcompat)
     implementation(libs.material)

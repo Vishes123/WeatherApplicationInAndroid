@@ -34,7 +34,7 @@ public class ListAdeptar extends AbstractItem <ListAdeptar , ListAdeptar.ViewHol
 
     @Override
     public int getLayoutRes() {
-        return R.layout.item_list;
+        return R.layout.item_list2;
     }
 
     @Override
